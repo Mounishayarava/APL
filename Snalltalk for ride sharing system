@@ -1,14 +1,41 @@
-"Creating rides"
-ride1 := StandardRide new initializeWithID: 101 pickup: 'Downtown' dropoff: 'Airport' distance: 10.
-ride2 := PremiumRide new initializeWithID: 102 pickup: 'Mall' dropoff: 'Hotel' distance: 5.
-"Creating driver"
-driver := Driver new initializeWithID: 201 name: 'Alice' rating: 4.8.
-driver addRide: ride1.
-driver addRide: ride2.
-"Creating rider"
-rider := Rider new initializeWithID: 301 name: 'Bob'.
-rider requestRide: ride1.
-rider requestRide: ride2.
-"Displaying details"
-Transcript show: 'Driver Details:', driver getDriverInfo; cr.
-Transcript show: 'Rider Requested Rides:', rider viewRides; cr.
+Object subclass: #Ride
+    instanceVariableNames: 'rideID distance'
+
+Ride >> initializeWithID: id distance: d
+    rideID := id.
+    distance := d.
+
+Ride >> fare
+    ^ distance * 2.0.
+
+Ride >> rideDetails
+    ^ 'Ride ', rideID asString, ': Distance ', distance asString, ' miles, Fare $', (self fare) asString.
+
+"Subclasses"
+Ride subclass: #StandardRide
+    instanceVariableNames: ''
+
+StandardRide >> fare
+    ^ distance * 2.5.
+
+Ride subclass: #PremiumRide
+    instanceVariableNames: ''
+
+PremiumRide >> fare
+    ^ distance * 4.0.
+
+Object subclass: #Driver
+    instanceVariableNames: 'name rides'
+
+Driver >> initializeWithName: driverName
+    name := driverName.
+    rides := OrderedCollection new.
+
+Driver >> addRide: aRide
+    rides add: aRide.
+
+Driver >> totalEarnings
+    ^ rides inject: 0 into: [ :sum :ride | sum + ride fare ].
+
+Driver >> driverDetails
+    ^ 'Driver: ', name, ', Total Earnings: $', (self totalEarnings) asString.
