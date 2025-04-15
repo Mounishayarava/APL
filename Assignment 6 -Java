@@ -1,0 +1,90 @@
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class RideSharingSystem {
+
+    // RideRequest class representing each ride request
+    static class RideRequest {
+        private final String rideId;
+
+        public RideRequest(String rideId) {
+            this.rideId = rideId;
+        }
+
+        public String getRideId() {
+            return rideId;
+        }
+    }
+
+    // SharedQueue class to handle adding and getting tasks safely
+    static class SharedQueue {
+        private final Queue<RideRequest> queue = new LinkedList<>();
+        private final int MAX_SIZE = 10;
+
+        // Synchronized method to safely add tasks to the queue
+        public synchronized void addTask(RideRequest request) throws InterruptedException {
+            while (queue.size() == MAX_SIZE) {
+                wait();  // Wait if the queue is full
+            }
+            queue.offer(request);
+            notifyAll();  // Notify waiting threads that a task has been added
+        }
+
+        // Synchronized method to safely get tasks from the queue
+        public synchronized RideRequest getTask() throws InterruptedException {
+            while (queue.isEmpty()) {
+                wait();  // Wait if the queue is empty
+            }
+            RideRequest request = queue.poll();
+            notifyAll();  // Notify waiting threads that a task has been retrieved
+            return request;
+        }
+    }
+
+    // RideSharingWorker class representing the worker thread
+    static class RideSharingWorker extends Thread {
+        private final SharedQueue queue;
+
+        public RideSharingWorker(SharedQueue queue) {
+            this.queue = queue;
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (true) {
+                    RideRequest request = queue.getTask();
+                    processRequest(request);
+                }
+            } catch (InterruptedException e) {
+                System.err.println("Worker interrupted: " + e.getMessage());
+            }
+        }
+
+        private void processRequest(RideRequest request) throws InterruptedException {
+            // Simulate processing a ride request (sleep to simulate delay)
+            System.out.println(Thread.currentThread().getName() + " is processing " + request.getRideId());
+            Thread.sleep(1000);  // Simulate time taken for processing the ride
+            System.out.println(Thread.currentThread().getName() + " completed " + request.getRideId());
+        }
+    }
+
+    // Main class to run the system
+    public static void main(String[] args) throws InterruptedException {
+        SharedQueue queue = new SharedQueue();
+
+        // Start worker threads
+        int numberOfWorkers = 3;
+        for (int i = 0; i < numberOfWorkers; i++) {
+            new RideSharingWorker(queue).start();
+        }
+
+        // Simulate adding ride requests to the queue
+        for (int i = 1; i <= 10; i++) {
+            RideRequest request = new RideRequest("Ride-" + i);
+            queue.addTask(request);
+            System.out.println("Added " + request.getRideId() + " to the queue.");
+            Thread.sleep(500);  // Simulate delay between adding requests
+        }
+    }
+}
