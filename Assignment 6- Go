@@ -1,0 +1,73 @@
+package main
+
+import (
+    "fmt"
+    "sync"
+    "time"
+)
+
+type SharedQueue struct {
+    queue []string
+    mu    sync.Mutex
+    cond  *sync.Cond
+}
+
+func NewSharedQueue() *SharedQueue {
+    sq := &SharedQueue{}
+    sq.cond = sync.NewCond(&sq.mu)
+    return sq
+}
+
+func (sq *SharedQueue) addTask(task string) {
+    sq.mu.Lock()
+    defer sq.mu.Unlock()
+
+    sq.queue = append(sq.queue, task)
+    sq.cond.Signal() // Notify a waiting worker
+}
+
+func (sq *SharedQueue) getTask() string {
+    sq.mu.Lock()
+    defer sq.mu.Unlock()
+
+    for len(sq.queue) == 0 {
+        sq.cond.Wait() // Wait for a task to be added
+    }
+
+    task := sq.queue[0]
+    sq.queue = sq.queue[1:]
+    return task
+}
+
+func worker(id int, queue *SharedQueue, wg *sync.WaitGroup) {
+    defer wg.Done()
+
+    for {
+        task := queue.getTask()
+        if task == "" {
+            return
+        }
+        fmt.Printf("Worker %d starting ride request %s\n", id, task)
+        time.Sleep(2 * time.Second) // Simulate processing time
+        fmt.Printf("Completed ride request: %s\n", task)
+    }
+}
+
+func main() {
+    queue := NewSharedQueue()
+    var wg sync.WaitGroup
+
+    // Start workers
+    for i := 0; i < 3; i++ {
+        wg.Add(1)
+        go worker(i, queue, &wg)
+    }
+
+    // Add tasks to the queue
+    for i := 0; i < 20; i++ {
+        task := fmt.Sprintf("Ride-%d", i)
+        queue.addTask(task)
+    }
+
+    wg.Wait() // Wait for all workers to finish
+}
