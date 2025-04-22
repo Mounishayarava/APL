@@ -1,0 +1,51 @@
+% ---------- BASIC FACTS ----------
+
+% Gender
+male(john).
+male(james).
+male(alex).
+male(sam).
+
+female(linda).
+female(emily).
+female(anna).
+female(nina).
+
+% Parent relationships
+parent(john, james).
+parent(john, linda).
+parent(james, alex).
+parent(james, emily).
+parent(linda, sam).
+parent(sam, anna).
+parent(sam, nina).
+
+% ---------- DERIVED RELATIONSHIPS ----------
+
+% Child: X is a child of Y
+child(X, Y) :- parent(Y, X).
+
+% Grandparent: X is grandparent of Y
+grandparent(X, Y) :-
+    parent(X, Z),
+    parent(Z, Y).
+
+% Sibling: X and Y share at least one parent and are not the same person
+sibling(X, Y) :-
+    parent(Z, X),
+    parent(Z, Y),
+    X \= Y.
+
+% Cousin: X and Y are cousins if their parents are siblings
+cousin(X, Y) :-
+    parent(P1, X),
+    parent(P2, Y),
+    sibling(P1, P2),
+    X \= Y.
+
+% Descendant: X is a descendant of Y
+descendant(X, Y) :-
+    parent(Y, X).
+descendant(X, Y) :-
+    parent(Y, Z),
+    descendant(X, Z).
