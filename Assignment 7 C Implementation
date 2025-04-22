@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
+int compare(const void *a, const void *b) {
+return (*(int*)a - *(int*)b);
+}
+double calculate_mean(int rides[], int count) {
+double total = 0;
+for (int i = 0; i < count; i++) {
+total += rides[i];
+}
+return total / count;
+}
+double calculate_median(int rides[], int count) {
+qsort(rides, count, sizeof(int), compare);
+if (count % 2 == 0)
+return (rides[count / 2 - 1] + rides[count / 2]) / 2.0;
+else
+return rides[count / 2];
+}
+void calculate_mode(int rides[], int count) {
+int maxCount = 0;
+printf("Most Frequent Ride Durations (Mode): ");
+for (int i = 0; i < count; i++) {
+int freq = 1;
+for (int j = i + 1; j < count; j++) {
+if (rides[i] == rides[j]) freq++;
+}
+if (freq > maxCount) maxCount = freq;
+}
+for (int i = 0; i < count; i++) {
+int freq = 1, alreadyPrinted = 0;
+for (int j = 0; j < i; j++)
+if (rides[i] == rides[j]) alreadyPrinted = 1;
+if (alreadyPrinted) continue;
+for (int j = i + 1; j < count; j++)
+if (rides[i] == rides[j]) freq++;
+if (freq == maxCount)
+printf("%d ", rides[i]);
+}
+printf("\n");
+}
+int main() {
+int ride_durations[] = {10, 15, 15, 20, 25};  // Ride durations in minutes
+int total_rides = sizeof(ride_durations) / sizeof(ride_durations[0]);
+printf("Ride Sharing System Statistics:\n");
+printf("Average Ride Duration (Mean): %.2f minutes\n", calculate_mean(ride_durations, total_rides));
+printf("Median Ride Duration: %.2f minutes\n", calculate_median(ride_durations, total_rides));
+calculate_mode(ride_durations, total_rides);
+return 0;
+}
+
