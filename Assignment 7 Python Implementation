@@ -1,0 +1,25 @@
+from collections import Counter
+class RideSharingStatistics:
+    def __init__(self, ride_durations):
+        self.ride_durations = ride_durations
+    def calculate_mean(self):
+        return sum(self.ride_durations) / len(self.ride_durations)
+    def calculate_median(self):
+        sorted_rides = sorted(self.ride_durations)
+        n = len(sorted_rides)
+        if n % 2 == 0:
+            return (sorted_rides[n // 2 - 1] + sorted_rides[n // 2]) / 2
+        else:
+            return sorted_rides[n // 2]
+    def calculate_mode(self):
+        counts = Counter(self.ride_durations)
+        max_freq = max(counts.values())
+        return [k for k, v in counts.items() if v == max_freq]
+
+if __name__ == "__main__":
+    durations = [10, 15, 15, 20, 25]  # Ride durations in minutes
+    stats = RideSharingStatistics(durations)
+    print("Ride Sharing System Statistics:")
+    print(f"Average Ride Duration (Mean): {stats.calculate_mean():.2f} minutes")
+    print(f"Median Ride Duration: {stats.calculate_median():.2f} minutes")
+    print(f"Most Frequent Durations (Mode): {stats.calculate_mode()}")
