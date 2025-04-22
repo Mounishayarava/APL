@@ -1,0 +1,32 @@
+let mean durations =
+  let total = List.fold_left ( +. ) 0.0 (List.map float_of_int durations) in
+  total /. float_of_int (List.length durations)
+let median durations =
+  let sorted = List.sort compare durations in
+  let len = List.length sorted in
+  if len mod 2 = 0 then
+    let mid = len / 2 in
+    float_of_int (List.nth sorted (mid - 1) + List.nth sorted mid) /. 2.0
+  else
+    float_of_int (List.nth sorted (len / 2))
+let mode durations =
+  let count_map =
+    List.fold_left
+      (fun acc x ->
+        let c = try List.assoc x acc with Not_found -> 0 in
+        (x, c + 1) :: List.remove_assoc x acc)
+      [] durations
+  in
+  let max_count = List.fold_left (fun acc (_, c) -> max acc c) 0 count_map in
+  List.fold_left
+    (fun acc (n, c) -> if c = max_count then n :: acc else acc)
+    [] count_map
+
+let () =
+  let ride_durations = [10; 15; 15; 20; 25] in
+  Printf.printf "Ride Sharing System Statistics:\n";
+  Printf.printf "Average Ride Duration (Mean): %.2f minutes\n" (mean ride_durations);
+  Printf.printf "Median Ride Duration: %.2f minutes\n" (median ride_durations);
+  Printf.printf "Most Frequent Durations (Mode): ";
+  List.iter (Printf.printf "%d ") (mode ride_durations);
+  print_newline ()
